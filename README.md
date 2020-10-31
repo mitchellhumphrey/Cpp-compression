@@ -17,6 +17,10 @@ compressed message
 
 filler bits
 
+## p8a-python
+
+First implementation I wrote of p8a comrpession, writen in python. Really slow. Only worth looking at if you hate Cpp code.
+
 # Other Libraries used
 
 Uses [tclap](http://tclap.sourceforge.net/) for flag setting for p8b and above.

@@ -1,3 +1,6 @@
 [submodule "tclap"]
 	path = tclap
 	url = https://git.code.sf.net/p/tclap/code
+[submodule "p8a-python"]
+	path = p8a-python
+	url = https://github.com/mitchellhumphrey/Python-Huffman-Encoding.git
