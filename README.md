@@ -1,6 +1,6 @@
-Mitchell Humphrey's Different Types of Compression
+# Mitchell Humphrey's Different Types of Compression
 
-# p8a
+## p8a
 
 first byte, longest code length
 next byte, amount of items at code length 1
@@ -14,3 +14,10 @@ character, then code, looped from smallest to largest
 amount of filler bytes at end of compressed message
 
 compressed message
+
+filler bits
+
+# Other Libraries used
+
+Uses [tclap](http://tclap.sourceforge.net/) for flag setting for p8b and above.
+
