@@ -1,3 +1,5 @@
-[submodule "code"]
-	path = code
+[submodule "tclap"]
+	path = tclap
 	url = https://git.code.sf.net/p/tclap/code
+
+
