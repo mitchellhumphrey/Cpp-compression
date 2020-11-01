@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <functional>
 #include <bitset>
+#include <sstream>
 #include "node.hpp"
 
 
@@ -14,12 +15,7 @@
 //description:
 void increment_dictionary(std::map<char, int> &dictionary, char letter){
     //checks if letter is not in dictionary
-    if (dictionary.find(letter) == dictionary.end()){
-        dictionary.insert({letter, 1});
-    }
-    else {
-        dictionary[letter] += 1;
-    }
+    dictionary[letter] += 1;
 }
 
 
@@ -40,13 +36,11 @@ std::vector<std::pair<int, node*>> build_dictionary_for_build_tree(std::vector<s
 //post:
 //description:
 node* build_tree(std::vector<std::pair<int, node*>> list){
-    std::cout<<"In build tree"<<std::endl;
     std::pair<int, node*> left, right;
     node* new_tree;
 
     while (list.size() > 1){
-        std::stable_sort(list.begin(), list.end(), std::less<void>{});
-        std::reverse(list.begin(), list.end());
+        std::stable_sort(list.begin(), list.end(), std::greater<void>{});
         
         //always gonna have more than 1 item in list so no need for if statement to check if vector is empty
         left = list.back();
@@ -132,15 +126,22 @@ int main(int argc, char **argv){
         return 0;
     }
 
-    while (file.read(&test, 1)){
-        increment_dictionary(dictionary, test);
-
+    std::cout<<"about to parse input"<<std::endl;
+    char array[1024];
+    while (file.read(array, 1024)|| file.gcount() > 0){
+        int count = file.gcount();
+        for( int i = 0; i < count; ++i){
+            increment_dictionary(dictionary, array[i]);
+        }
     }
+    std::cout<<"finished parsing input"<<std::endl;
 
     //now go through dictionary and put into vector
     for (auto const& x : dictionary){
         char_list.push_back({x.second, x.first});
     }
+
+    std::cout<<"finished making vector"<<std::endl;
     
 
 
@@ -149,9 +150,13 @@ int main(int argc, char **argv){
     std::vector<std::pair<int, node*>> list = build_dictionary_for_build_tree(char_list);
     tree = build_tree(list);
     
+    std::cout<<"finished building tree"<<std::endl;
+
     std::map<char, std::string> table = make_table_from_tree(tree);
     std::map<int, int> amount_of_length; // input is the length of bit prefix, out is the number with that length
  
+    std::cout<<"finished making table from tree"<<std::endl;
+
     for (auto const& x : table){
         amount_of_length[x.second.size()] += 1;        
     }
@@ -170,6 +175,8 @@ int main(int argc, char **argv){
         output.write(reinterpret_cast<const char *>(&convert_to_one_byte), 1);
     }
 
+    std::cout<<"finished writing bytes to file"<<std::endl;
+
     std::vector<std::pair<std::string, std::string>> before_right = vector_sorted_length(table);
     std::string what_to_write;
 
@@ -182,24 +189,39 @@ int main(int argc, char **argv){
         what_to_write = what_to_write + "0";
     }
 
+
+    unsigned long long index = 0;
     //Writes the table of codes to the file
-    while (what_to_write.length()){
-        std::string temp = what_to_write.substr(0,8);
-        what_to_write.replace(0,8,"");
+    while (what_to_write.length() > index){
+        std::string temp = what_to_write.substr(index, 8);
+        //what_to_write.replace(0, 8, "");
         unsigned char byte =static_cast<unsigned char>(std::bitset<8>(temp).to_ulong());
         output.write(reinterpret_cast<const char *>(&byte), 1);
+        index += 8;
     }
+
+    std::cout<<"finished writing table to file"<<std::endl;
 
     std::string big_code;
+
+
     file.clear();
+    big_code.reserve(file.tellg() * 4);
+
+    
     file.seekg(0, std::ios::beg);
 
-    while (file.read(&test, 1)){
-        big_code += table[test];
+    while (file.read(array, 1024) || file.gcount() > 0){
+        int count = file.gcount();
+        for (int i = 0; i < count; ++i){
+            big_code += table[array[i]];
+        }
+        
     }
+    std::cout<<"finished appending to big_code"<<std::endl;
 
     unsigned char amount_padding = 0;
-    while (0!=(big_code.length()%8)){
+    while (big_code.length() % 8 != 0){
         big_code += "0";
         ++amount_padding;
     }
@@ -207,11 +229,18 @@ int main(int argc, char **argv){
     output.write(reinterpret_cast<const char *>(&amount_padding), 1);
 
     //writes the actual compressed file
-    while (big_code.length()){
-        std::string temp = big_code.substr(0,8);
-        big_code.replace(0,8,"");
+    int count = 0;
+    index = 0;
+    while (big_code.length() > index){
+        std::string temp = big_code.substr(index,8);
+        
         unsigned char byte =static_cast<unsigned char>(std::bitset<8>(temp).to_ulong());
         output.write(reinterpret_cast<const char *>(&byte), 1);
+        
+        if (!(index % 16000000)) std::cout<<"count is "<<index<<std::endl;
+        
+        index += 8;
+
     }
     return 0;
 }
