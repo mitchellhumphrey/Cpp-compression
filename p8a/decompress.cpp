@@ -84,6 +84,11 @@ int main(int argc, char **argv){
         input.read(&read_char, 1);
         amount_for_each_size.push_back(static_cast<unsigned char>(read_char));
     }
+
+    if (read_char == 0){
+        amount_for_each_size.pop_back();
+        amount_for_each_size.push_back(256);
+    }
     
     int bit_count_for_table = 0;
     unsigned long long index = 0;

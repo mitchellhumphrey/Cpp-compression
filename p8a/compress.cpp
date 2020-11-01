@@ -117,13 +117,13 @@ int main(int argc, char **argv){
     struct node* tree = nullptr;
 
     std::ifstream file (argv[1],std::ios::binary | std::ios::in);
-    std::ofstream output (argv[2], std::ios::binary | std::ios::out);
+    
     std::string line;
     std::vector<std::pair<int, char>> char_list;
 
     if(!file){
         std::cout<<"Could not open file: " << argv[1]<< std::endl;
-        return 0;
+        return 1;
     }
 
     if (debug) std::cout<<"about to parse input"<<std::endl;
@@ -143,6 +143,12 @@ int main(int argc, char **argv){
 
     if (debug) std::cout<<"finished making vector"<<std::endl;
     
+    if (char_list.size() == 1) {
+        std::cout<<"Does not support files with only 1 type of byte"<< std::endl;
+        return 1;
+    }
+    //makes output file now that we know its valid input
+    std::ofstream output (argv[2], std::ios::binary | std::ios::out);
 
 
     //left is smaller side, right is larger side
@@ -156,9 +162,10 @@ int main(int argc, char **argv){
     std::map<int, int> amount_of_length; // input is the length of bit prefix, out is the number with that length
  
     if (debug) std::cout<<"finished making table from tree"<<std::endl;
-
+    
     for (auto const& x : table){
-        amount_of_length[x.second.size()] += 1;        
+        amount_of_length[x.second.size()] += 1;
+               
     }
 
     unsigned char biggest = 0;
