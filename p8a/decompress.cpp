@@ -61,10 +61,14 @@ int main(int argc, char **argv){
     std::ifstream input (argv[1],std::ios::binary | std::ios::in);
     std::ofstream output (argv[2], std::ios::binary | std::ios::out);
 
+
     if(!input){
         std::cout<<"Could not open file: " << argv[1]<< std::endl;
         return 0;
     }
+    input.seekg(0, std::ios::end);
+    unsigned long long file_length = input.tellg();
+    input.seekg(0);
 
     char read_char;
     if(!input.read(&read_char, 1)){
@@ -73,16 +77,16 @@ int main(int argc, char **argv){
     }
 
     //length of longest code stored in tree
-    int biggest_size = static_cast<int>(read_char);
+    int biggest_size = static_cast<unsigned char>(read_char);
     //std::cout<<"THE LONGEST ENCODING IS "<<biggest_size<<"BITS"<<std::endl;
-    std::vector<int> amount_for_each_size;
+    std::vector<unsigned int> amount_for_each_size;
     for (auto i = 0; i <= biggest_size; i++){
         input.read(&read_char, 1);
-        amount_for_each_size.push_back(static_cast<int>(read_char));
+        amount_for_each_size.push_back(static_cast<unsigned char>(read_char));
     }
     
     int bit_count_for_table = 0;
-    int index = 0;
+    unsigned long long index = 0;
     for (auto &x : amount_for_each_size){
         bit_count_for_table += (index * x)+(8 * x);
         index++;
@@ -110,19 +114,16 @@ int main(int argc, char **argv){
     
     for(long unsigned int i = 0; i < amount_for_each_size.size(); i++){
         while(amount_for_each_size[i]){
-            std::string temp = decode_table.substr(0,8);
-            decode_table.replace(0,8,"");
-            table[decode_table.substr(0,i)] = static_cast<char>(std::bitset<8>(temp).to_ulong());
-            decode_table.replace(0,i,"");
+            std::string temp = decode_table.substr(index,8);
+            index += 8;
+            table[decode_table.substr(index,i)] = static_cast<char>(std::bitset<8>(temp).to_ulong());
+            index += i;
             //std::cout<<"h"<<std::endl;
             amount_for_each_size[i] -= 1;
         }
     }    
     
 
-    /*for (auto &x : table){
-        std::cout<<x.first<<" "<<x.second<<std::endl;
-    }8*/
 
     node* tree = build_tree(table);
     node* tree_pointer = tree;
@@ -133,34 +134,94 @@ int main(int argc, char **argv){
 
     std::string string_of_bits;
 
-    while (input.read(&read_char, 1)){
-        string_of_bits += std::bitset<8>(read_char).to_string();
-    }
-
+    char array[131072];
+    char write_array[131072];
     index = 0;
-    while(string_of_bits.length() >static_cast<unsigned long>(index + padding)){
-        tree_pointer = tree;
-        while (true){
-            if (tree_pointer->left == nullptr || tree_pointer->right == nullptr){
-                output.write(&(tree_pointer->character), 1);
-                //std::cout<<"wrote the char: "<<tree_pointer->character<<std::endl;
-                //std::cin.ignore(1024,'\n');
-                //index++;
-                break;
-            }
-            else{
-                if (string_of_bits[index]=='0'){
-                    tree_pointer = tree_pointer->left;
-                    index++;
+    int counter = 0;
+    tree_pointer = tree;
+    std::cout<<"padding is "<<padding<<std::endl;
+    while (input.read(array, sizeof(array)) || input.gcount() > 0){
+        int count = input.gcount();
+        
+        if (count != sizeof(array) || input.tellg() == file_length || input.tellg() == std::char_traits<char>::eof()){
+            for(int i = 0; i < (count - 1); ++i){
+                for (int j = 7; j >= 0; --j){
+                    if(array[i]&(1 << j)){
+                        tree_pointer = tree_pointer->right;
+                    }
+                    else {
+                        tree_pointer = tree_pointer->left;
+                    }
+                    if (tree_pointer->left == nullptr || tree_pointer->right == nullptr){
+                        write_array[index] = tree_pointer->character;
+                        ++index;
+                        tree_pointer = tree;
+                    }
+                    if (index >= sizeof(write_array)) {
+                        output.write(write_array, sizeof(write_array));
+                        index = 0;
+                        counter++;
+                        if (counter % 1024 == 0)std::cout<<"wrote 128 MMMMiiiiiiiB"<<std::endl;
+                    }
                 }
-                else{
+            }
+
+            
+            for (int j = 7; j >= padding; --j){
+                if(array[count-1]&(1 << j)){
                     tree_pointer = tree_pointer->right;
-                    index++;
+                }
+                else {
+                    tree_pointer = tree_pointer->left;
+                }
+                if (tree_pointer->left == nullptr || tree_pointer->right == nullptr){
+                    write_array[index] = tree_pointer->character;
+                    ++index;
+                    tree_pointer = tree;
+                }
+                if (index >= sizeof(write_array)) {
+                    output.write(write_array, sizeof(write_array));
+                    index = 0;
+                    counter++;
+                    if (counter % 1024 == 0)std::cout<<"wrote 128 MMMMiiiiiiiB"<<std::endl;
+                }
+            }
+
+        }
+
+        else{
+            for(int i = 0; i < count; ++i){
+                for (int j = 7; j >= 0; --j){
+                    
+                    if(array[i]&(1 << j)){
+                        tree_pointer = tree_pointer->right;
+                    }
+                    else {
+                        tree_pointer = tree_pointer->left;
+                    }
+
+                    if (tree_pointer->left == nullptr || tree_pointer->right == nullptr){
+                        write_array[index] = tree_pointer->character;
+                        ++index;
+                        tree_pointer = tree;
+                    }
+
+
+                    if (index >= sizeof(write_array)) {
+                        output.write(write_array, sizeof(write_array));
+                        index = 0;
+                        counter++;
+                        if (counter % 1024 == 0)std::cout<<"wrote 128 MMMMiiiiiiiB"<<std::endl;
+                    }
                 }
             }
         }
+
+
+
+
         
     }
-
+    output.write(write_array, index);
     return 0; 
 }

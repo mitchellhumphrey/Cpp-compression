@@ -9,6 +9,7 @@
 #include <sstream>
 #include "node.hpp"
 
+bool debug = false;
 
 //pre:
 //post:
@@ -115,7 +116,6 @@ int main(int argc, char **argv){
     std::map<char, int> dictionary;
     struct node* tree = nullptr;
 
-    char test;
     std::ifstream file (argv[1],std::ios::binary | std::ios::in);
     std::ofstream output (argv[2], std::ios::binary | std::ios::out);
     std::string line;
@@ -126,7 +126,7 @@ int main(int argc, char **argv){
         return 0;
     }
 
-    std::cout<<"about to parse input"<<std::endl;
+    if (debug) std::cout<<"about to parse input"<<std::endl;
     char array[1024];
     while (file.read(array, 1024)|| file.gcount() > 0){
         int count = file.gcount();
@@ -134,14 +134,14 @@ int main(int argc, char **argv){
             increment_dictionary(dictionary, array[i]);
         }
     }
-    std::cout<<"finished parsing input"<<std::endl;
+    if (debug) std::cout<<"finished parsing input"<<std::endl;
 
     //now go through dictionary and put into vector
     for (auto const& x : dictionary){
         char_list.push_back({x.second, x.first});
     }
 
-    std::cout<<"finished making vector"<<std::endl;
+    if (debug) std::cout<<"finished making vector"<<std::endl;
     
 
 
@@ -150,12 +150,12 @@ int main(int argc, char **argv){
     std::vector<std::pair<int, node*>> list = build_dictionary_for_build_tree(char_list);
     tree = build_tree(list);
     
-    std::cout<<"finished building tree"<<std::endl;
+    if (debug) std::cout<<"finished building tree"<<std::endl;
 
     std::map<char, std::string> table = make_table_from_tree(tree);
     std::map<int, int> amount_of_length; // input is the length of bit prefix, out is the number with that length
  
-    std::cout<<"finished making table from tree"<<std::endl;
+    if (debug) std::cout<<"finished making table from tree"<<std::endl;
 
     for (auto const& x : table){
         amount_of_length[x.second.size()] += 1;        
@@ -175,7 +175,7 @@ int main(int argc, char **argv){
         output.write(reinterpret_cast<const char *>(&convert_to_one_byte), 1);
     }
 
-    std::cout<<"finished writing bytes to file"<<std::endl;
+    if (debug) std::cout<<"finished writing bytes to file"<<std::endl;
 
     std::vector<std::pair<std::string, std::string>> before_right = vector_sorted_length(table);
     std::string what_to_write;
@@ -200,7 +200,7 @@ int main(int argc, char **argv){
         index += 8;
     }
 
-    std::cout<<"finished writing table to file"<<std::endl;
+    if (debug) std::cout<<"finished writing table to file"<<std::endl;
 
     std::string big_code;
 
@@ -218,7 +218,7 @@ int main(int argc, char **argv){
         }
         
     }
-    std::cout<<"finished appending to big_code"<<std::endl;
+    if (debug) std::cout<<"finished appending to big_code"<<std::endl;
 
     unsigned char amount_padding = 0;
     while (big_code.length() % 8 != 0){
@@ -229,7 +229,6 @@ int main(int argc, char **argv){
     output.write(reinterpret_cast<const char *>(&amount_padding), 1);
 
     //writes the actual compressed file
-    int count = 0;
     index = 0;
     while (big_code.length() > index){
         std::string temp = big_code.substr(index,8);
@@ -237,7 +236,7 @@ int main(int argc, char **argv){
         unsigned char byte =static_cast<unsigned char>(std::bitset<8>(temp).to_ulong());
         output.write(reinterpret_cast<const char *>(&byte), 1);
         
-        if (!(index % 16000000)) std::cout<<"count is "<<index<<std::endl;
+        if (debug) if (!(index % 16000000)) std::cout<<"count is "<<index<<std::endl;
         
         index += 8;
 

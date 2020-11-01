@@ -1,0 +1,5 @@
+Support string stream
+progress bar?
+
+make case when all 256 encodings are the same length
+make case when file is all just 1 byte or x bytes of 1 type of byte
