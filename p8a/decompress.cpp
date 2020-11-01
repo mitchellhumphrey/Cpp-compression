@@ -38,7 +38,7 @@ void print_tree(node* tree, std::string prefix){
         //std::cout<<prefix<<" is the character :"<<tree->character<<std::endl;
     }
     else if(tree->left == nullptr || tree->right == nullptr){
-        std::cout<<"there was an error"<<"the code is "<<prefix<<std::endl;
+        std::cout<<"there was an error "<<"the code is "<<prefix<<std::endl;
         //std::cout;
     }
     else{
@@ -139,7 +139,7 @@ int main(int argc, char **argv){
     index = 0;
     int counter = 0;
     tree_pointer = tree;
-    std::cout<<"padding is "<<padding<<std::endl;
+    //std::cout<<"padding is "<<padding<<std::endl;
     while (input.read(array, sizeof(array)) || input.gcount() > 0){
         int count = input.gcount();
         
@@ -161,7 +161,7 @@ int main(int argc, char **argv){
                         output.write(write_array, sizeof(write_array));
                         index = 0;
                         counter++;
-                        if (counter % 1024 == 0)std::cout<<"wrote 128 MMMMiiiiiiiB"<<std::endl;
+                        //if (counter % 1024 == 0)std::cout<<"wrote 128 MMMMiiiiiiiB"<<std::endl;
                     }
                 }
             }
@@ -183,7 +183,7 @@ int main(int argc, char **argv){
                     output.write(write_array, sizeof(write_array));
                     index = 0;
                     counter++;
-                    if (counter % 1024 == 0)std::cout<<"wrote 128 MMMMiiiiiiiB"<<std::endl;
+                    //if (counter % 1024 == 0)std::cout<<"wrote 128 MMMMiiiiiiiB"<<std::endl;
                 }
             }
 
@@ -211,7 +211,7 @@ int main(int argc, char **argv){
                         output.write(write_array, sizeof(write_array));
                         index = 0;
                         counter++;
-                        if (counter % 1024 == 0)std::cout<<"wrote 128 MMMMiiiiiiiB"<<std::endl;
+                        //if (counter % 1024 == 0)std::cout<<"wrote 128 MMMMiiiiiiiB"<<std::endl;
                     }
                 }
             }
