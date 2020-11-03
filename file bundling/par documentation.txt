@@ -1,0 +1,13 @@
+integers as little Endian
+
+first 3 bytes, par (magic number)
+next 2 bytes, is 2 byte number saying how many files there are in bundle
+
+for amount of files in bundle
+1st 2 bytes is length of filename + extension
+next 4 bytes is the length of the actual file
+next X bytes is the name of file / filepath.
+repeat for all files in bundle.
+
+for amount of files in bundle
+write the file data here, uncompressed
